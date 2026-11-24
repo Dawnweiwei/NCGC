@@ -7,7 +7,7 @@ This is the official code for the WSDM 2027 paper **Rethinking Semi-Supervised N
 We tested the training code with Python 3.10, PyTorch 1.12.1, and PyTorch Geometric 2.6.1. After installing PyTorch and PyTorch Geometric, install the remaining dependencies:
 
 ```bash
-python -m pip install numpy==1.26.4 scipy==1.15.3 scikit-learn==1.6.1 ogb==1.3.6 gdown==4.7.3
+python -m pip install numpy==1.26.4 scipy==1.15.3 scikit-learn==1.6.1 gdown==4.7.3
 ```
 
 ## Dataset

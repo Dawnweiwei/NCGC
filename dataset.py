@@ -1,7 +1,6 @@
 import torch
 import torch_geometric.transforms as T
 from torch_geometric.datasets import Amazon, Coauthor, HeterophilousGraphDataset, WikiCS, AttributedGraphDataset, CitationFull
-from ogb.nodeproppred import NodePropPredDataset
 
 import numpy as np
 import scipy.sparse as sp
@@ -16,13 +15,8 @@ from data_utils import dataset_drive_url, rand_train_test_idx
 class NCDataset(object):
     def __init__(self, name):
         """
-        based off of ogb NodePropPredDataset
+        Single-graph container adapted from OGB's NodePropPredDataset:
         https://github.com/snap-stanford/ogb/blob/master/ogb/nodeproppred/dataset.py
-        Gives torch tensors instead of numpy arrays
-            - name (str): name of the dataset
-            - root (str): root directory to store the dataset folder
-            - meta_dict: dictionary that stores all the meta-information about data. Default is None,
-                    but when something is passed, it uses its information. Useful for debugging for external contributers.
 
         Usage after construction:
 
@@ -35,11 +29,10 @@ class NCDataset(object):
                          'edge_feat': None,
                          'node_feat': node_feat,
                          'num_nodes': num_nodes}
-        For additional documentation, see OGB Library-Agnostic Loader https://ogb.stanford.edu/docs/nodeprop/
 
         """
 
-        self.name = name  # original name, e.g., ogbn-proteins
+        self.name = name
         self.graph = {}
         self.label = None
 
@@ -110,8 +103,6 @@ def load_dataset(data_dir, dataname, sub_dataname=''):
         dataset = load_hetero_dataset(data_dir, dataname)
     elif dataname == 'wikics':
         dataset = load_wikics_dataset(data_dir)
-    elif dataname in ('ogbn-arxiv', 'ogbn-products'):
-        dataset = load_ogb_dataset(data_dir, dataname)
     elif dataname == 'pokec':
         dataset = load_pokec_mat(data_dir)
     elif dataname in ('cora', 'citeseer', 'pubmed'):
@@ -276,22 +267,6 @@ def load_coauthor_dataset(data_dir, name):
                      'num_nodes': num_nodes}
     dataset.label = label
 
-    return dataset
-
-def load_ogb_dataset(data_dir, name):
-    dataset = NCDataset(name)
-    ogb_dataset = NodePropPredDataset(name=name, root=f'{data_dir}/ogb')
-    dataset.graph = ogb_dataset.graph
-    dataset.graph['edge_index'] = torch.as_tensor(dataset.graph['edge_index'])
-    dataset.graph['node_feat'] = torch.as_tensor(dataset.graph['node_feat'])
-
-    def ogb_idx_to_tensor():
-        split_idx = ogb_dataset.get_idx_split()
-        tensor_split_idx = {key: torch.as_tensor(
-            split_idx[key]) for key in split_idx}
-        return tensor_split_idx
-    dataset.load_fixed_splits = ogb_idx_to_tensor  # ogb_dataset.get_idx_split
-    dataset.label = torch.as_tensor(ogb_dataset.labels).reshape(-1, 1)
     return dataset
 
 def load_pokec_mat(data_dir):
